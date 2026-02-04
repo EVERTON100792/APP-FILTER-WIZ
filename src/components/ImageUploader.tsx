@@ -45,6 +45,18 @@ export function ImageUploader({ onImageSelected }: ImageUploaderProps) {
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
             />
 
+            {/* Hidden input specifically for Camera Trigger */}
+            <input
+                type="file"
+                id="camera-input"
+                className="hidden"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                onClick={(e) => e.stopPropagation()} // Prevent bubbling up to the main container click
+            />
+
+
             <div className="flex flex-col items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-industrial-bg border border-industrial-border flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <Upload className="w-8 h-8 text-industrial-muted group-hover:text-brand-accent transition-colors" />
@@ -59,13 +71,29 @@ export function ImageUploader({ onImageSelected }: ImageUploaderProps) {
                     </p>
                 </div>
 
-                <div className="flex gap-2 mt-2">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-industrial-bg border border-industrial-border text-xs text-industrial-muted">
-                        <Camera className="w-3 h-3" /> Câmera
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-industrial-bg border border-industrial-border text-xs text-industrial-muted">
-                        <ImageIcon className="w-3 h-3" /> Galeria
-                    </span>
+                <div className="flex gap-2 mt-4">
+                    {/* Button that triggers the Camera Input specifically */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            document.getElementById('camera-input')?.click();
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-accent text-white hover:bg-brand-accent-hover transition-colors shadow-lg shadow-brand-accent/20"
+                    >
+                        <Camera className="w-4 h-4" />
+                        <span className="font-medium">Abrir Câmera</span>
+                    </button>
+
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            inputRef.current?.click();
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-industrial-bg border border-industrial-border hover:bg-industrial-border transition-colors"
+                    >
+                        <ImageIcon className="w-4 h-4 text-industrial-muted" />
+                        <span className="text-industrial-muted">Galeria</span>
+                    </button>
                 </div>
             </div>
         </div>

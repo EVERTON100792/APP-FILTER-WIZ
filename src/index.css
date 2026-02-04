@@ -3,44 +3,44 @@
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
 
-  --color-industrial-bg: #09090b;
-  /* Zinc 950 */
-  --color-industrial-surface: #18181b;
-  /* Zinc 900 */
-  --color-industrial-border: #27272a;
-  /* Zinc 800 */
-  --color-industrial-text: #f4f4f5;
-  /* Zinc 100 */
-  --color-industrial-muted: #a1a1aa;
-  /* Zinc 400 */
+  /* PALETTE: CYBER-LUXURY (Deep Void + Neon) */
+  --color-industrial-bg: #000000;
+  /* Void Black */
+  --color-industrial-surface: #0a0a0a;
+  /* Deep Graphite */
+  --color-industrial-border: #1f1f1f;
+  /* Stealth Gray */
+  --color-industrial-text: #ffffff;
+  /* Pure White */
+  --color-industrial-muted: #737373;
+  /* Neutral Metal */
 
-  --color-brand-accent: #22c55e;
-  /* Green 500 - Positive/Sales */
-  --color-brand-accent-hover: #16a34a;
-  /* Green 600 */
+  --color-brand-accent: #22d3ee;
+  /* Cyan (Default) - Will be overridden by inline styles */
+  --color-brand-accent-hover: #06b6d4;
 
-  /* ANIMATIONS: Scanner Beam (Responsive & Optimized) */
-  /* We use 'top' for responsiveness (matches parent height). 
-     Performance is handled by 'will-change: top' in the component. */
-  --animate-scan: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  /* ANIMATIONS */
+  --animate-scan: scan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
   @keyframes scan {
     0% {
       top: 0%;
       opacity: 0;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
     }
-
-    10% {
+    15% {
       opacity: 1;
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.6);
     }
-
-    90% {
+    85% {
       opacity: 1;
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.6);
     }
-
     100% {
       top: 100%;
       opacity: 0;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
     }
   }
 }
@@ -58,23 +58,51 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%),
+    linear-gradient(to bottom, #000000 0%, #050505 100%);
+}
+
+/* Base Utilities */
+.glass-panel {
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.neon-text {
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-industrial-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-industrial-border);
-  border-radius: 4px;
+  background: #262626;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-industrial-muted);
+  background: #404040;
 }

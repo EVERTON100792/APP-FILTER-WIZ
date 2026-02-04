@@ -21,25 +21,36 @@ export function SharePanel({ canvas, selectedColorName }: SharePanelProps) {
 
         try {
             const blob = await getCanvasBlob();
-            if (!blob) return;
+            if (!blob) throw new Error('Falha ao gerar imagem');
 
             const file = new File([blob], `filtro-${selectedColorName}.png`, { type: 'image/png' });
 
             // Web Share API v2 (Supports files)
-            if (navigator.share && navigator.canShare({ files: [file] })) {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
                     title: 'Filtro Colorido',
                     text: `${APP_CONFIG.defaultMessage} Cor: ${selectedColorName}`,
                 });
             } else {
-                // Fallback: Download + WhatsApp Link
-                handleDownload();
-                const text = encodeURIComponent(`${APP_CONFIG.defaultMessage} (Veja a imagem baixada)`);
-                window.open(`https://wa.me/?text=${text}`, '_blank');
+                // Fallback: Check if we are on mobile (trying to share) or desktop
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+                if (isMobile) {
+                    // On mobile without share API, we try to open image in new tab or download
+                    handleDownload();
+                    alert('Seu navegador não suporta compartilhamento direto. A imagem foi baixada.');
+                } else {
+                    // Desktop fallback
+                    handleDownload();
+                    const text = encodeURIComponent(`${APP_CONFIG.defaultMessage} (Veja a imagem baixada)`);
+                    window.open(`https://wa.me/?text=${text}`, '_blank');
+                }
             }
         } catch (error) {
             console.error('Share failed:', error);
+            // If share fails, try to just download
+            handleDownload();
         } finally {
             setIsSharing(false);
         }

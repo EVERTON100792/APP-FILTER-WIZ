@@ -33,6 +33,7 @@ export function useImageProcessor() {
 
         try {
             // Config for @imgly
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const config: any = {
                 progress: (_key: string, current: number, total: number) => {
                     const percent = Math.round((current / total) * 100);

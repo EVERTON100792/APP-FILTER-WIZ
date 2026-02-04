@@ -64,7 +64,7 @@ function App() {
               </div>
 
               {/* Canvas Box */}
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-industrial-border bg-black/50 backdrop-blur-sm">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl glass-panel group">
                 <FilterCanvas
                   image={imageState.processedUrl}
                   color={selectedColor}

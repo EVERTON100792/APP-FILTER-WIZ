@@ -13,7 +13,7 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
         if (!canvasRef.current || !image) return;
 
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         ctx.imageSmoothingEnabled = true;
@@ -24,13 +24,27 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
         img.src = image;
 
         img.onload = () => {
-            const width = img.naturalWidth;
-            const height = img.naturalHeight;
+            // PERFORMANCE FIX: Downsample huge images to prevent mobile crash
+            const MAX_DIMENSION = 2000;
+            let width = img.naturalWidth;
+            let height = img.naturalHeight;
+
+            if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                const ratio = width / height;
+                if (width > height) {
+                    width = MAX_DIMENSION;
+                    height = Math.round(MAX_DIMENSION / ratio);
+                } else {
+                    height = MAX_DIMENSION;
+                    width = Math.round(MAX_DIMENSION * ratio);
+                }
+            }
+
             canvas.width = width;
             canvas.height = height;
 
-            // 1. Draw Original Image
-            ctx.drawImage(img, 0, 0);
+            // 1. Draw Original Image (Resized)
+            ctx.drawImage(img, 0, 0, width, height);
 
             // 1b. Capture Original Pixels
             const originalData = ctx.getImageData(0, 0, width, height).data;
@@ -49,12 +63,12 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
                 // STEP B: TEXTURE INJECTION (Multiply)
                 ctx.globalCompositeOperation = 'multiply';
                 ctx.globalAlpha = 0.8;
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, width, height);
 
                 // STEP C: HIGHLIGHT RESTORATION (Screen)
                 ctx.globalCompositeOperation = 'screen';
                 ctx.globalAlpha = 0.4;
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, width, height);
 
                 // STEP D: COLOR VIBRANCE (Color)
                 ctx.globalCompositeOperation = 'color';
@@ -64,7 +78,7 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
                 // Clip to Object Bounds
                 ctx.globalCompositeOperation = 'destination-in';
                 ctx.globalAlpha = 1.0;
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, width, height);
 
                 ctx.restore();
 
