@@ -84,11 +84,16 @@ export function useImageProcessor() {
                     const percent = Math.round((current / total) * 100);
                     setProgress(`Processando: ${percent}%`);
                 },
-                debug: true,
-                device: 'gpu' // Try GPU if available
+                debug: false // Disable debug for prod
+                // REMOVED 'gpu' device to fix White Screen on Mobile (Texture corruption)
             };
 
             const blob = await removeBackground(optimizedBlob, config);
+
+            if (!blob || blob.size < 100) {
+                throw new Error('A IA não conseguiu identificar o objeto ou gerou um resultado inválido.');
+            }
+
             const url = URL.createObjectURL(blob);
 
             setImageState(prev => ({
