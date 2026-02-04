@@ -25,5 +25,5 @@ export const FILTER_COLORS = [
 
 export const APP_CONFIG = {
     whatsappPhone: '', // Vendor can configure this potentially, or generic share
-    defaultMessage: 'Olha como ficou o filtro na cor que você escolheu!',
+    defaultMessage: '',
 };

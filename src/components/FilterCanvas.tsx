@@ -193,12 +193,14 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
     if (!image) return null;
 
     return (
-        <div className="w-full rounded-2xl overflow-hidden border border-industrial-border bg-industrial-bg shadow-xl relative group">
+        <div
+            className="w-full rounded-2xl overflow-hidden border border-industrial-border bg-zinc-800 shadow-xl relative group"
+        >
             <canvas ref={canvasRef} className="w-full h-auto block" />
 
             {/* SHIELD BADGE */}
             <div className={`absolute top-4 right-4 bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded transition-opacity duration-300 ${isPainting ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
-                Shield V13 (Broad Spectrum)
+                Shield V15 (Sticker Shield Pro)
             </div>
 
             {/* PAINTING OVERLAY ANIMATION */}
