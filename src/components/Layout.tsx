@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Camera, ShieldCheck } from 'lucide-react';
 
 interface LayoutProps {

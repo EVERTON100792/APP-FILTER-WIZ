@@ -9,7 +9,7 @@ interface ColorControlsProps {
 
 export function ColorControls({ selectedColor, onColorChange }: ColorControlsProps) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [showCustomPicker, setShowCustomPicker] = useState(false);
+
 
     // Filter colors based on search term
     const filteredColors = useMemo(() => {
