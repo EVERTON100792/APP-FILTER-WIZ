@@ -128,7 +128,7 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
 
                 offCtx.restore();
 
-                // 3. SMART MASKING V14 (Improved Shield) - Less aggressive on darks
+                // 3. SMART MASKING V15 (Sticker Shield Pro) 🛡️
                 const tintedImageData = offCtx.getImageData(0, 0, width, height);
                 const tintedPixels = tintedImageData.data;
 
@@ -141,9 +141,26 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
                     if (a === 0) continue;
 
                     const luma = 0.299 * rO + 0.587 * gO + 0.114 * bO;
-                    // Protect absolute whites more aggressively
-                    if (luma > 230) {
-                        const protection = (luma - 230) / 25;
+                    const max = Math.max(rO, gO, bO);
+                    const min = Math.min(rO, gO, bO);
+                    const saturation = max === 0 ? 0 : (max - min) / max;
+
+                    let protection = 0.0;
+
+                    // CRITERIA A: WHITE/PAPER LABELS (High Luma + Low Saturation)
+                    // Labels are white/grey. Paint is colorful.
+                    // If it's bright (>150) AND basically grey/white (<15% sat), protect it.
+                    if (luma > 160 && saturation < 0.15) {
+                        // Smooth transition for protection
+                        protection = 1.0;
+                    } else if (luma > 220) {
+                        // CRITERIA B: SPECULAR HIGHLIGHTS (reflections)
+                        // Always protect super bright pixels regardless of saturation
+                        protection = (luma - 220) / 35;
+                    }
+
+                    if (protection > 0) {
+                        protection = Math.min(protection, 1.0);
                         tintedPixels[i] = tintedPixels[i] * (1 - protection) + rO * protection;
                         tintedPixels[i + 1] = tintedPixels[i + 1] * (1 - protection) + gO * protection;
                         tintedPixels[i + 2] = tintedPixels[i + 2] * (1 - protection) + bO * protection;

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { removeBackground } from '@imgly/background-removal';
 
 export interface ImageState {
@@ -114,16 +114,7 @@ export function useImageProcessor() {
         }
     }, [imageState.originalUrl]);
 
-    // AUTO-TRIGGER BACKGROUND REMOVAL
-    useEffect(() => {
-        if (imageState.originalUrl && !imageState.isAiProcessed && !isLoading) {
-            // Small timeout to allow UI to settle/render "Processing" state
-            const timer = setTimeout(() => {
-                triggerBackgroundRemoval();
-            }, 500);
-            return () => clearTimeout(timer);
-        }
-    }, [imageState.originalUrl, imageState.isAiProcessed, isLoading, triggerBackgroundRemoval]);
+
 
     // The tinting logic will be handled purely in the Canvas component for performance
     // This hook mainly manages the SOURCE image state (Raw vs AI Cleaned)
