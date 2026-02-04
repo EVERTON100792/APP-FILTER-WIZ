@@ -99,36 +99,36 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
             if (displayColor !== 'transparent' && displayColor !== '#ffffff') {
                 offCtx.save();
 
-                // STEP A: PRIMER COAT (Normal)
-                offCtx.globalCompositeOperation = 'source-over';
-                offCtx.globalAlpha = 0.65;
+                // STEP A: BASE TINT (Color) - Stronger to establish hue
+                offCtx.globalCompositeOperation = 'color';
+                offCtx.globalAlpha = 0.8; // Increased from 0.4
                 offCtx.fillStyle = displayColor;
                 offCtx.fillRect(0, 0, width, height);
 
-                // STEP B: TEXTURE INJECTION (Multiply)
+                // STEP B: SHADOWS Preservation (Multiply) - Lighter
                 offCtx.globalCompositeOperation = 'multiply';
-                offCtx.globalAlpha = 0.6;
+                offCtx.globalAlpha = 0.3; // Reduced from 0.6 drastically to prevent black crush
                 offCtx.drawImage(img, 0, 0, width, height);
 
-                // STEP C: HIGHLIGHT RESTORATION (Screen)
-                offCtx.globalCompositeOperation = 'screen';
-                offCtx.globalAlpha = 0.5;
-                offCtx.drawImage(img, 0, 0, width, height);
-
-                // STEP D: COLOR VIBRANCE (Color)
-                offCtx.globalCompositeOperation = 'color';
+                // STEP C: LUMINOSITY RESTORATION (Soft Light) - Better for metallic look
+                offCtx.globalCompositeOperation = 'soft-light';
                 offCtx.globalAlpha = 0.4;
+                offCtx.fillStyle = displayColor;
                 offCtx.fillRect(0, 0, width, height);
 
-                // Clip to Object Bounds (This is what was deleting the background before!)
-                // Now it only clips the offscreen canvas, preserving transparency around the subject
+                // STEP D: HIGHLIGHTS (Screen) - To make it pop
+                offCtx.globalCompositeOperation = 'screen';
+                offCtx.globalAlpha = 0.2;
+                offCtx.drawImage(img, 0, 0, width, height);
+
+                // Clip to Object Bounds
                 offCtx.globalCompositeOperation = 'destination-in';
                 offCtx.globalAlpha = 1.0;
                 offCtx.drawImage(img, 0, 0, width, height);
 
                 offCtx.restore();
 
-                // 3. SMART MASKING V13 (Broad Spectrum Sticker Shield) 🛡️
+                // 3. SMART MASKING V14 (Improved Shield) - Less aggressive on darks
                 const tintedImageData = offCtx.getImageData(0, 0, width, height);
                 const tintedPixels = tintedImageData.data;
 
@@ -141,22 +141,9 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
                     if (a === 0) continue;
 
                     const luma = 0.299 * rO + 0.587 * gO + 0.114 * bO;
-                    const max = Math.max(rO, gO, bO);
-                    const min = Math.min(rO, gO, bO);
-                    const saturation = max - min;
-
-                    let protection = 0.0;
-
-                    if (luma > 85 && saturation < 90) {
-                        const lumaFactor = Math.min((luma - 85) / 65, 1.0);
-                        const satFactor = (90 - saturation) / 90;
-                        protection = Math.max(protection, lumaFactor * satFactor * 1.5);
-                    }
-
-                    if (luma > 240) protection = 1.0;
-
-                    if (protection > 0) {
-                        protection = Math.min(protection, 1.0);
+                    // Protect absolute whites more aggressively
+                    if (luma > 230) {
+                        const protection = (luma - 230) / 25;
                         tintedPixels[i] = tintedPixels[i] * (1 - protection) + rO * protection;
                         tintedPixels[i + 1] = tintedPixels[i + 1] * (1 - protection) + gO * protection;
                         tintedPixels[i + 2] = tintedPixels[i + 2] * (1 - protection) + bO * protection;

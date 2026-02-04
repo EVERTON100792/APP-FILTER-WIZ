@@ -1,22 +1,25 @@
 export const FILTER_COLORS = [
     { name: 'Original', value: 'transparent', hex: 'transparent' },
-    // Primárias
-    { name: 'Vermelho Puro', value: '#dc2626', hex: '#dc2626' }, // Red-600
-    { name: 'Azul Real', value: '#2563eb', hex: '#2563eb' }, // Blue-600
-    { name: 'Amarelo Ouro', value: '#ca8a04', hex: '#ca8a04' }, // Yellow-600 (Darker for visibility)
 
-    // Secundárias & Populares
-    { name: 'Verde Bandeira', value: '#16a34a', hex: '#16a34a' }, // Green-600
-    { name: 'Laranja Vivo', value: '#ea580c', hex: '#ea580c' }, // Orange-600
-    { name: 'Roxo Profundo', value: '#7c3aed', hex: '#7c3aed' }, // Violet-600
+    // Vibrantes & Populares
+    { name: 'Vermelho Ferrari', value: '#ef4444', hex: '#ef4444' }, // Mais vivo que o anterior
+    { name: 'Azul Royal', value: '#3b82f6', hex: '#3b82f6' }, // Mais claro/brilhante
+    { name: 'Amarelo Sol', value: '#fbbf24', hex: '#fbbf24' }, // Menos alaranjado
+    { name: 'Verde Limão', value: '#84cc16', hex: '#84cc16' },
+    { name: 'Laranja Neon', value: '#f97316', hex: '#f97316' },
 
-    // Especiais/Automotivos
-    { name: 'Preto Fosco', value: '#171717', hex: '#171717' },
-    { name: 'Cinza Titânio', value: '#475569', hex: '#475569' },
-    { name: 'Rosa Choque', value: '#db2777', hex: '#db2777' },
-    { name: 'Ciano Turbo', value: '#06b6d4', hex: '#06b6d4' },
-    { name: 'Marrom Café', value: '#78350f', hex: '#78350f' },
+    // Tons Ricos
+    { name: 'Roxo Ametista', value: '#a855f7', hex: '#a855f7' },
+    { name: 'Rosa Chiclete', value: '#ec4899', hex: '#ec4899' },
+    { name: 'Turquesa', value: '#06b6d4', hex: '#06b6d4' },
+    { name: 'Vinho', value: '#881337', hex: '#881337' },
+    { name: 'Verde Esmeralda', value: '#10b981', hex: '#10b981' },
 
+    // Tons Neutros & Metálicos
+    { name: 'Preto Absoluto', value: '#000000', hex: '#000000' }, // Preto real
+    { name: 'Grafite', value: '#374151', hex: '#374151' },
+    { name: 'Prata', value: '#9ca3af', hex: '#9ca3af' },
+    { name: 'Ouro Velho', value: '#b45309', hex: '#b45309' },
     { name: 'Branco Puro', value: '#ffffff', hex: '#ffffff' },
 ];
 
