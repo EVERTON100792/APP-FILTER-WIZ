@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --color-industrial-bg: #09090b;
+  /* Zinc 950 */
+  --color-industrial-surface: #18181b;
+  /* Zinc 900 */
+  --color-industrial-border: #27272a;
+  /* Zinc 800 */
+  --color-industrial-text: #f4f4f5;
+  /* Zinc 100 */
+  --color-industrial-muted: #a1a1aa;
+  /* Zinc 400 */
+
+  --color-brand-accent: #22c55e;
+  /* Green 500 - Positive/Sales */
+  --color-brand-accent-hover: #16a34a;
+  /* Green 600 */
+
+  /* ANIMATIONS: Scanner Beam (Responsive & Optimized) */
+  /* We use 'top' for responsiveness (matches parent height). 
+     Performance is handled by 'will-change: top' in the component. */
+  --animate-scan: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+  @keyframes scan {
+    0% {
+      top: 0%;
+      opacity: 0;
+    }
+
+    10% {
+      opacity: 1;
+    }
+
+    90% {
+      opacity: 1;
+    }
+
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+}
+
+:root {
+  font-family: var(--font-sans);
+  background-color: var(--color-industrial-bg);
+  color: var(--color-industrial-text);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-industrial-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-industrial-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-industrial-muted);
+}
