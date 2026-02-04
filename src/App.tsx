@@ -9,6 +9,8 @@ import { useImageProcessor } from './hooks/useImageProcessor';
 import { FILTER_COLORS } from './lib/constants';
 import { RefreshCw, Sparkles } from 'lucide-react';
 
+import bgFilpar from './assets/bg-filpar.png';
+
 function App() {
   const {
     imageState,
@@ -67,6 +69,7 @@ function App() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl glass-panel group">
                 <FilterCanvas
                   image={imageState.processedUrl}
+                  backgroundImage={imageState.isAiProcessed ? bgFilpar : null}
                   color={selectedColor}
                   onCanvasReady={setCanvasRef}
                 />

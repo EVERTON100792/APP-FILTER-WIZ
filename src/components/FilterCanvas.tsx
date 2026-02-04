@@ -1,29 +1,50 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface FilterCanvasProps {
     image: string | null;
+    backgroundImage?: string | null;
     color: string;
     onCanvasReady: (canvas: HTMLCanvasElement) => void;
 }
 
-export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps) {
+export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: FilterCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isPainting, setIsPainting] = useState(false);
+    const [displayColor, setDisplayColor] = useState(color);
+
+    // Painting Animation Effect
+    useEffect(() => {
+        if (color !== displayColor) {
+            setIsPainting(true);
+            const timer = setTimeout(() => {
+                setDisplayColor(color);
+                setIsPainting(false);
+            }, 1000); // Faster painting effect (1s)
+            return () => clearTimeout(timer);
+        }
+    }, [color, displayColor]);
 
     useEffect(() => {
         if (!canvasRef.current || !image) return;
 
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
+        const mainCanvas = canvasRef.current;
+        const mainCtx = mainCanvas.getContext('2d', { willReadFrequently: true });
+        if (!mainCtx) return;
 
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        mainCtx.imageSmoothingEnabled = true;
+        mainCtx.imageSmoothingQuality = 'high';
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = image;
 
-        img.onload = () => {
+        const bgImg = new Image();
+        if (backgroundImage) {
+            bgImg.crossOrigin = 'anonymous';
+            bgImg.src = backgroundImage;
+        }
+
+        const render = () => {
             // PERFORMANCE FIX: Downsample huge images to prevent mobile crash
             const MAX_DIMENSION = 2000;
             let width = img.naturalWidth;
@@ -40,50 +61,75 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
                 }
             }
 
-            canvas.width = width;
-            canvas.height = height;
+            // Set Main Canvas Size
+            mainCanvas.width = width;
+            mainCanvas.height = height;
 
-            // 1. Draw Original Image (Resized)
-            ctx.drawImage(img, 0, 0, width, height);
+            // --- LAYER 1: BACKGROUND (Transparent + Logo) ---
+            mainCtx.clearRect(0, 0, width, height);
 
-            // 1b. Capture Original Pixels
-            const originalData = ctx.getImageData(0, 0, width, height).data;
+            if (backgroundImage && bgImg.complete) {
+                mainCtx.save();
+                const bgScale = Math.min(width, height) * 0.5; // 50% of smallest dimension
+                const bgW = (bgImg.naturalWidth / bgImg.naturalHeight) * bgScale;
+                const bgH = bgScale;
+                const bgX = (width - bgW) / 2;
+                const bgY = (height - bgH) / 2;
+
+                mainCtx.globalAlpha = 0.15; // Subtle watermark (15%)
+                mainCtx.drawImage(bgImg, bgX, bgY, bgW, bgH);
+                mainCtx.restore();
+            }
+
+            // --- LAYER 2: SUBJECT (Filtered) ---
+            // Create offscreen canvas for the subject to apply filters independently
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = width;
+            offCanvas.height = height;
+            const offCtx = offCanvas.getContext('2d');
+            if (!offCtx) return;
+
+            // 1. Draw Original Image (Subject)
+            offCtx.drawImage(img, 0, 0, width, height);
+
+            // 1b. Capture Original Pixels (for Masking logic)
+            const originalData = offCtx.getImageData(0, 0, width, height).data;
 
             // 2. APPLY FACTORY FINISH ENGINE V12 (Re-Lighting)
-            // Sticking with V12 as it provides the best Texture/Color balance.
-            if (color !== 'transparent' && color !== '#ffffff') {
-                ctx.save();
+            if (displayColor !== 'transparent' && displayColor !== '#ffffff') {
+                offCtx.save();
 
                 // STEP A: PRIMER COAT (Normal)
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.globalAlpha = 0.75;
-                ctx.fillStyle = color;
-                ctx.fillRect(0, 0, width, height);
+                offCtx.globalCompositeOperation = 'source-over';
+                offCtx.globalAlpha = 0.65;
+                offCtx.fillStyle = displayColor;
+                offCtx.fillRect(0, 0, width, height);
 
                 // STEP B: TEXTURE INJECTION (Multiply)
-                ctx.globalCompositeOperation = 'multiply';
-                ctx.globalAlpha = 0.8;
-                ctx.drawImage(img, 0, 0, width, height);
+                offCtx.globalCompositeOperation = 'multiply';
+                offCtx.globalAlpha = 0.6;
+                offCtx.drawImage(img, 0, 0, width, height);
 
                 // STEP C: HIGHLIGHT RESTORATION (Screen)
-                ctx.globalCompositeOperation = 'screen';
-                ctx.globalAlpha = 0.4;
-                ctx.drawImage(img, 0, 0, width, height);
+                offCtx.globalCompositeOperation = 'screen';
+                offCtx.globalAlpha = 0.5;
+                offCtx.drawImage(img, 0, 0, width, height);
 
                 // STEP D: COLOR VIBRANCE (Color)
-                ctx.globalCompositeOperation = 'color';
-                ctx.globalAlpha = 0.5;
-                ctx.fillRect(0, 0, width, height);
+                offCtx.globalCompositeOperation = 'color';
+                offCtx.globalAlpha = 0.4;
+                offCtx.fillRect(0, 0, width, height);
 
-                // Clip to Object Bounds
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.globalAlpha = 1.0;
-                ctx.drawImage(img, 0, 0, width, height);
+                // Clip to Object Bounds (This is what was deleting the background before!)
+                // Now it only clips the offscreen canvas, preserving transparency around the subject
+                offCtx.globalCompositeOperation = 'destination-in';
+                offCtx.globalAlpha = 1.0;
+                offCtx.drawImage(img, 0, 0, width, height);
 
-                ctx.restore();
+                offCtx.restore();
 
                 // 3. SMART MASKING V13 (Broad Spectrum Sticker Shield) 🛡️
-                const tintedImageData = ctx.getImageData(0, 0, width, height);
+                const tintedImageData = offCtx.getImageData(0, 0, width, height);
                 const tintedPixels = tintedImageData.data;
 
                 for (let i = 0; i < originalData.length; i += 4) {
@@ -101,25 +147,14 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
 
                     let protection = 0.0;
 
-                    // A. STICKER SHIELD V13 (Broad Spectrum) 🏷️
-                    // User reported failure on white stickers.
-                    // Analysis: Stickers reflect the red tank, becoming "Pinkish" (Sat > 55).
-                    // Fix: Increased Saturation Tolerance to 90.
-                    // Fix: Decreased Luma Threshold to 85 (handles shadows).
                     if (luma > 85 && saturation < 90) {
-                        // Luma Curve: 85 -> 0%, 150 -> 100%
                         const lumaFactor = Math.min((luma - 85) / 65, 1.0);
-
-                        // Sat Factor: 90 -> 0%, 0 -> 100%
                         const satFactor = (90 - saturation) / 90;
-
-                        protection = Math.max(protection, lumaFactor * satFactor * 1.5); // Boosted strength
+                        protection = Math.max(protection, lumaFactor * satFactor * 1.5);
                     }
 
-                    // B. ABSOLUTE HIGHLIGHTS ☀️
                     if (luma > 240) protection = 1.0;
 
-                    // Apply Protection
                     if (protection > 0) {
                         protection = Math.min(protection, 1.0);
                         tintedPixels[i] = tintedPixels[i] * (1 - protection) + rO * protection;
@@ -127,21 +162,61 @@ export function FilterCanvas({ image, color, onCanvasReady }: FilterCanvasProps)
                         tintedPixels[i + 2] = tintedPixels[i + 2] * (1 - protection) + bO * protection;
                     }
                 }
-                ctx.putImageData(tintedImageData, 0, 0);
+                offCtx.putImageData(tintedImageData, 0, 0);
             }
 
-            onCanvasReady(canvas);
+            // --- COMPOSITE: Draw Filtered Subject onto Main Canvas ---
+            mainCtx.drawImage(offCanvas, 0, 0);
+
+            onCanvasReady(mainCanvas);
         };
-    }, [image, color, onCanvasReady]);
+
+        // Wait for main image
+        img.onload = () => {
+            if (backgroundImage) {
+                if (bgImg.complete) {
+                    render();
+                } else {
+                    bgImg.onload = render;
+                }
+            } else {
+                render();
+            }
+        };
+
+    }, [image, backgroundImage, displayColor, onCanvasReady]);
 
     if (!image) return null;
 
     return (
         <div className="w-full rounded-2xl overflow-hidden border border-industrial-border bg-industrial-bg shadow-xl relative group">
             <canvas ref={canvasRef} className="w-full h-auto block" />
-            <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+
+            {/* SHIELD BADGE */}
+            <div className={`absolute top-4 right-4 bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded transition-opacity duration-300 ${isPainting ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
                 Shield V13 (Broad Spectrum)
             </div>
+
+            {/* PAINTING OVERLAY ANIMATION */}
+            {isPainting && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] z-20">
+                    <div className="flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-300">
+                        <div className="relative w-16 h-16">
+                            <div className="absolute inset-0 border-4 border-white/20 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-brand-accent rounded-full border-t-transparent animate-spin"></div>
+                            <div
+                                className="absolute inset-2 rounded-full opacity-50 animate-pulse"
+                                style={{ backgroundColor: color }}
+                            ></div>
+                        </div>
+                        <div className="px-4 py-2 bg-industrial-surface/90 rounded-full border border-industrial-border shadow-2xl backdrop-blur-md">
+                            <p className="text-xs font-bold uppercase tracking-widest text-white animate-pulse">
+                                Aplicando Tinta...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
