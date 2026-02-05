@@ -1,26 +1,27 @@
 export const FILTER_COLORS = [
     { name: 'Original', value: 'transparent', hex: 'transparent' },
 
-    // Vibrantes & Populares
-    { name: 'Vermelho Ferrari', value: '#ef4444', hex: '#ef4444' }, // Mais vivo que o anterior
-    { name: 'Azul Royal', value: '#3b82f6', hex: '#3b82f6' }, // Mais claro/brilhante
-    { name: 'Amarelo Sol', value: '#fbbf24', hex: '#fbbf24' }, // Menos alaranjado
-    { name: 'Verde Limão', value: '#84cc16', hex: '#84cc16' },
-    { name: 'Laranja Neon', value: '#f97316', hex: '#f97316' },
+    // CORES INDUSTRIAIS (Padrão de Fábrica)
+    // Cores ajustadas para mistura com Primer Grayscale
+    { name: 'Azul Industrial', value: '#0047AB', hex: '#0047AB' }, // Azul Cobalto Puro (Deep Blue) - Corrige o Roxo
+    { name: 'Vermelho Ferrari', value: '#CC0000', hex: '#CC0000' }, // Vermelho sangue denso (Updated V32)
+    { name: 'Amarelo Caterpillar', value: '#FFC300', hex: '#FFC300' }, // Ouro industrial
+    { name: 'Verde John Deere', value: '#368F2B', hex: '#368F2B' }, // Verde trator
+    { name: 'Laranja Safety', value: '#FF5400', hex: '#FF5400' }, // Laranja segurança
 
-    // Tons Ricos
-    { name: 'Roxo Ametista', value: '#a855f7', hex: '#a855f7' },
-    { name: 'Rosa Chiclete', value: '#ec4899', hex: '#ec4899' },
-    { name: 'Turquesa', value: '#06b6d4', hex: '#06b6d4' },
-    { name: 'Vinho', value: '#881337', hex: '#881337' },
-    { name: 'Verde Esmeralda', value: '#10b981', hex: '#10b981' },
+    // TONS PREMIUM
+    { name: 'Roxo Metálico', value: '#7209B7', hex: '#7209B7' },
+    { name: 'Rosa Choque', value: '#F72585', hex: '#F72585' },
+    { name: 'Turquesa Oceano', value: '#4CC9F0', hex: '#4CC9F0' },
+    { name: 'Vinho Bordeaux', value: '#641220', hex: '#641220' },
+    { name: 'Verde Petróleo', value: '#064E3B', hex: '#064E3B' },
 
-    // Tons Neutros & Metálicos
-    { name: 'Preto Absoluto', value: '#000000', hex: '#000000' }, // Preto real
-    { name: 'Grafite', value: '#374151', hex: '#374151' },
-    { name: 'Prata', value: '#9ca3af', hex: '#9ca3af' },
-    { name: 'Ouro Velho', value: '#b45309', hex: '#b45309' },
-    { name: 'Branco Puro', value: '#ffffff', hex: '#ffffff' },
+    // NEUTROS & METAIS
+    { name: 'Preto Piano', value: '#0a0a0a', hex: '#0a0a0a' }, // Quase preto absoluto
+    { name: 'Cinza Espacial', value: '#4B5563', hex: '#4B5563' },
+    { name: 'Prata Lunar', value: '#E5E7EB', hex: '#E5E7EB' },
+    { name: 'Cobre/Bronze', value: '#9A3B3B', hex: '#9A3B3B' }, // Ajustado para ser mais visível
+    { name: 'Branco Alumínio', value: '#F3F4F6', hex: '#F3F4F6' },
 ];
 
 export const APP_CONFIG = {
