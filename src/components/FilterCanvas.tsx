@@ -82,10 +82,11 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
             const originalImageData = offCtx.getImageData(0, 0, width, height);
             const originalData = originalImageData.data;
 
-            // 2. ENGINE V30: "3D VOLUME RECOVERY" (Smart Shield + 3D Coat)
+            // 2. ENGINE V33: "REALISTIC INDUSTRIAL" (Solid & Deep)
             if (displayColor !== 'transparent' && displayColor !== '#ffffff') {
 
                 // --- STAGE 0: PRIMER (Grayscale Luma) ---
+                // Base neutra para receber a cor
                 const grayData = offCtx.createImageData(width, height);
                 for (let i = 0; i < originalData.length; i += 4) {
                     const r = originalData[i];
@@ -95,53 +96,42 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
 
                     if (a > 0) {
                         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                        // Boost contrast slightly on the primer to help definition
+                        // Boost contrast slightly
                         grayData.data[i] = gray;
                         grayData.data[i + 1] = gray;
                         grayData.data[i + 2] = gray;
                         grayData.data[i + 3] = a;
                     }
                 }
-                // Draw Primer (Base)
                 offCtx.putImageData(grayData, 0, 0);
 
                 offCtx.save();
 
-                // --- STAGE 1: SHADOW DEFINITION (Multiply) ---
-                // Pinta as sombras NATURAIS da peça com a cor da tinta.
-                // Isso garante que a 'curva' do cilindro seja preservada.
+                // --- STAGE 1: SOLID COLOR BASE (Multiply) ---
+                // Aumentado para dar profundidade e cor real
                 offCtx.globalCompositeOperation = 'multiply';
-                offCtx.globalAlpha = 0.8;
+                offCtx.globalAlpha = 0.9; // V33: Aumentado para 0.9 (Era 0.8)
                 offCtx.fillStyle = displayColor;
                 offCtx.fillRect(0, 0, width, height);
 
-                // --- STAGE 2: BASE COLOR (Normal/Color) ---
-                // Garante que a cor seja vibrante (Hue fix), mas com transparência para não chapar.
+                // --- STAGE 2: VIBRANCE (Color Burn / Color) ---
+                // Garante que a cor não fique "lavada" pelo cinza
                 offCtx.globalCompositeOperation = 'color';
-                offCtx.globalAlpha = 0.75; // V32: Increased from 0.6 to 0.75 for denser color 
+                offCtx.globalAlpha = 0.8; // V33: Aumentado para 0.8
                 offCtx.fillStyle = displayColor;
                 offCtx.fillRect(0, 0, width, height);
 
-                // --- STAGE 3: METALLIC TEXTURE (Overlay) ---
-                // Reaplica a textura do PRIMER (Grayscale) por cima.
-                // Isso traz de volta os arranhões, relevos e imperfeições do metal.
+                // --- STAGE 3: TEXTURE RECOVERY (Overlay) ---
+                // Traz de volta os detalhes metálicos, mas suave
                 offCtx.globalCompositeOperation = 'overlay';
-                offCtx.globalAlpha = 0.4;
-                offCtx.drawImage(offCanvas, 0, 0); // Desenha o próprio grayscale sobre si mesmo
+                offCtx.globalAlpha = 0.35;
+                offCtx.drawImage(offCanvas, 0, 0);
 
-                // --- STAGE 4: SPECULAR SHINE (Smart Gloss) ---
-                // Apenas os brilhos intensos originais.
+                // --- STAGE 4: HIGHLIGHTS (Screen) ---
+                // Apenas os brilhos mais fortes
                 offCtx.globalCompositeOperation = 'screen';
-                offCtx.globalAlpha = 0.5;
+                offCtx.globalAlpha = 0.4; // Reduzido um pouco para não lavar a cor
                 offCtx.drawImage(img, 0, 0, width, height);
-
-                // --- STAGE 5: FINAL TINT (Soft Light) ---
-                // Um banho final de luz colorida para integrar tudo.
-                offCtx.globalCompositeOperation = 'soft-light';
-                offCtx.globalAlpha = 0.15; // V32: Reduced from 0.3 to prevent washing out details
-                offCtx.fillStyle = displayColor;
-                offCtx.fillRect(0, 0, width, height);
-
 
                 // Clip to Object Bounds
                 offCtx.globalCompositeOperation = 'destination-in';
@@ -150,7 +140,7 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
 
                 offCtx.restore();
 
-                // 3. SMART MASKING V30 (Glass & Chrome Protocol) 🛡️
+                // 3. SMART MASKING V33 (Realistic Industrial) 🛡️
                 const finalImageData = offCtx.getImageData(0, 0, width, height);
                 const finalPixels = finalImageData.data;
 
@@ -169,30 +159,25 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
 
                     let protection = 0.0;
 
-                    // CRITERIA A: GLASS / NEUTRAL AREAS (Visores, Cromados, Etiquetas)
-                    // Coisas que não tem cor (Saturação baixa) não devem ser pintadas.
-                    // Antes era < 0.15, agora < 0.22 para pegar mais 'vidro sujo' e metais.
-                    // E ignoramos coisas muito escuras (Luma < 40) pois podem ser sombras profundas pintadas.
-                    if (saturation < 0.22 && luma > 40) {
+                    // CRITERIA A: GLASS / NEUTRAL AREAS
+                    // V33: Reduzido drasticamente o limite de saturação.
+                    // Isso permite pintar metais cinzentos (saturation ~0.05 a 0.10) que antes eram protegidos.
+                    // Só protege o que é MUITO cinza/vidro ou muito claro.
+                    if (saturation < 0.10 && luma > 50) {
+                        // Falloff mais suave
+                        if (saturation < 0.05) protection = 0.9;
+                        else protection = 0.5;
+                    }
+
+                    // CRITERIA B: EXTREME HIGHLIGHTS (Vidros Estourados)
+                    if (luma > 240) {
                         protection = 1.0;
-
-                        // Smooth falloff for saturation (0.18 to 0.22)
-                        // Se saturação é 0 (puro cinza), proteção 100%. Se 0.21, proteção parcial.
-                        if (saturation > 0.15) {
-                            protection = 1.0 - ((saturation - 0.15) / 0.07);
-                        }
                     }
 
-                    // CRITERIA B: EXTREME HIGHLIGHTS (Reflexos de Luz no Vidro)
-                    else if (luma > 235) {
-                        protection = 1.0; // Brilho puro = Branco
-                    }
-
-                    // CRITERIA C: DEEP BLACKS (Borrachas, frestas escuras)
-                    // Se algo é quase preto puro, não adianta pintar de azul/vermelho.
-                    // Mantem o preto original para contraste.
-                    else if (luma < 15) {
-                        protection = 0.8;
+                    // CRITERIA C: DEEP BLACKS
+                    // Mantem apenas o preto absoluto
+                    else if (luma < 10) {
+                        protection = 0.9;
                     }
 
                     if (protection > 0) {
@@ -237,7 +222,7 @@ export function FilterCanvas({ image, backgroundImage, color, onCanvasReady }: F
 
             {/* SHIELD BADGE */}
             <div className={`absolute top-4 right-4 bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded transition-opacity duration-300 ${isPainting ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
-                Shield V30 (Sticker Shield Pro)
+                Shield V15 (Sticker Shield Pro)
             </div>
 
             {/* PAINTING OVERLAY ANIMATION */}
